@@ -1,16 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import styles from './Button.module.css';
 
-class Button extends Component {
-  render() {
-    const { onClick, children } = this.props;
-
-    return (
-      <button className={styles.Button} onClick={onClick}>
-        {children}
-      </button>
-    );
-  }
+function Button({ onClick, children }) {
+  return (
+    <button className={styles.Button} onClick={onClick}>
+      {children}
+    </button>
+  );
 }
 
 export default Button;

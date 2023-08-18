@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from './App.module.css';
 import ImageGallery from '../ImageGallery/ImageGallery';
@@ -10,31 +10,22 @@ import Searchbar from '../Searchbar/Searchbar';
 
 const API_KEY = '37760459-bf670a4af420eae2f9d25b705';
 
-class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    isLoading: false,
-    showModal: false,
-    largeImageUrl: '',
-  };
+function App() {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImageUrl, setLargeImageUrl] = useState('');
 
-  componentDidMount() {
-    this.fetchImages();
-  }
+  useEffect(() => {
+    fetchImages();
+  }, [query, page]);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.query !== this.state.query || prevState.page !== this.state.page) {
-      this.fetchImages();
-    }
-  }
-
-  fetchImages = async () => {
-    const { query, page } = this.state;
+  const fetchImages = async () => {
     if (!query) return;
 
-    this.setState({ isLoading: true });
+    setIsLoading(true);
 
     try {
       const response = await axios.get(
@@ -42,58 +33,48 @@ class App extends Component {
       );
       const newImages = response.data.hits;
 
-      this.setState((prevState) => ({
-        images: page === 1 ? newImages : [...prevState.images, ...newImages],
-      }));
+      setImages((prevImages) => (page === 1 ? newImages : [...prevImages, ...newImages]));
     } catch (error) {
       console.error('Error fetching images:', error);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
 
-  handleSubmit = (query) => {
-    this.setState({ query, page: 1, images: [] });
+  const handleSubmit = (newQuery) => {
+    setQuery(newQuery);
+    setPage(1);
+    setImages([]);
   };
 
-  handleLoadMore = () => {
-    this.setState((prevState) => ({ page: prevState.page + 1 }));
+  const handleLoadMore = () => {
+    setPage((prevPage) => prevPage + 1);
   };
 
-  handleImageClick = (largeImageURL) => {
-    this.setState({ largeImageUrl: largeImageURL, showModal: true });
+  const handleImageClick = (largeImageURL) => {
+    setLargeImageUrl(largeImageURL);
+    setShowModal(true);
   };
 
-  handleCloseModal = () => {
-    this.setState({ showModal: false });
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
-  render() {
-    const { images, isLoading, showModal, largeImageUrl } = this.state;
-
-    return (
-      <div className={styles.App}>
-        <Searchbar onSubmit={this.handleSubmit} />
-        <ImageGallery>
-          {images.map((image) => (
-            <ImageGalleryItem
-              key={image.id}
-              image={image}
-              onClick={this.handleImageClick}
-            />
-          ))}
-        </ImageGallery>
-        {isLoading && <Loader />}
-        {images.length > 0 && !isLoading && images.length % 12 === 0 && (
-          <Button onClick={this.handleLoadMore}>Load more</Button>
-        )}
-        {showModal && (
-          <Modal isOpen={showModal} onClose={this.handleCloseModal} imageUrl={largeImageUrl} />
-        )}
-      </div>
-    );
-  }
+  return (
+    <div className={styles.App}>
+      <Searchbar onSubmit={handleSubmit} />
+      <ImageGallery>
+        {images.map((image) => (
+          <ImageGalleryItem key={image.id} image={image} onClick={handleImageClick} />
+        ))}
+      </ImageGallery>
+      {isLoading && <Loader />}
+      {images.length > 0 && !isLoading && images.length % 12 === 0 && (
+        <Button onClick={handleLoadMore}>Load more</Button>
+      )}
+      {showModal && <Modal isOpen={showModal} onClose={handleCloseModal} imageUrl={largeImageUrl} />}
+    </div>
+  );
 }
-
 
 export default App;
