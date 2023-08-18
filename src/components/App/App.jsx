@@ -18,10 +18,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [largeImageUrl, setLargeImageUrl] = useState('');
 
-  useEffect(() => {
-    fetchImages();
-  }, [query, page]);
-
+ useEffect(() => {
   const fetchImages = async () => {
     if (!query) return;
 
@@ -41,6 +38,8 @@ function App() {
     }
   };
 
+  fetchImages();
+}, [query, page]);
   const handleSubmit = (newQuery) => {
     setQuery(newQuery);
     setPage(1);
